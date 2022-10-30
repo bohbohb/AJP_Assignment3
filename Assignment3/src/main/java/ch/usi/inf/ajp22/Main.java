@@ -67,6 +67,12 @@ public class Main {
      * Use the method getTracks from the Album class to get the List of tracks.
      * You MUST use the mapToInt method. If possible use method references.
      */
+    public static int sumOfRatingMap(Album album) {
+        return album.getTracks()
+                .stream()
+                .mapToInt(Track::getRating)
+                .sum();
+    }
 
     /**
      * 4 Points
@@ -76,6 +82,11 @@ public class Main {
      *       the same song occurs in the list.
      *       Two songs can be considered the same if they have the same title.
      */
+    public static Map<String, Long> countTrackOccurrence(List<Track> trackList) {
+        return trackList
+                .stream()
+                .collect(Collectors.groupingBy(Track::getTitle, Collectors.counting()));
+    }
 
     /**
      * 4 Points
