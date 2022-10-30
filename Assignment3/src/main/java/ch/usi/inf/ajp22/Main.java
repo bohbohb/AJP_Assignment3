@@ -21,6 +21,12 @@ public class Main {
      *       input: a list of Album
      *       output: the Album with the longest title.
      */
+    public static Album longestTitle(List<Album> albums) {
+        return albums
+                .stream()
+                .max(Comparator.comparingInt(album -> album.getTitle().length()))
+                .orElseThrow(RuntimeException::new);
+    }
 
     /**
      * 4 Points
@@ -31,6 +37,12 @@ public class Main {
      * You MUST use the reduce method, in the variant which takes as input an identity, an accumulator and a combiner.
      * If possible use method references.
      */
+    public static int sumOfRatingReduce(Album albums) {
+        return albums
+                .getTracks()
+                .stream()
+                .reduce(0, (accumulated, track2) -> accumulated + track2.getRating(), Integer::sum);
+    }
 
     /**
      * 4 Points
@@ -40,6 +52,12 @@ public class Main {
      * Use the method getTracks from the Album class to get the List of tracks.
      * You MUST use one variant of the collect method. If possible use method references.
      */
+    public static int sumOfRatingCollection(Album album) {
+        return album
+                .getTracks()
+                .stream()
+                .collect(Collectors.summingInt(Track::getRating));
+    }
 
     /**
      * 4 Points

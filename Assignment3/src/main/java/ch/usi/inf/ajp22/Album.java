@@ -10,7 +10,7 @@ public class Album {
     private Artist artist;
     private String title;
 
-    private static Comparator<Track> byDuration;
+    private static Comparator<Track> byDuration = Comparator.comparingInt(Track::getLength);
 
     public Album(List<Track> songs, Artist artist, String title) {
         this.tracks = songs;
@@ -49,6 +49,9 @@ public class Album {
      *       input: void
      *       output: an Optional<Track>
      */
+    private Optional<Track> searchLongestSong() {
+        return tracks.stream().max(byDuration);
+    }
 
     /**
      * 3 Points
@@ -57,7 +60,9 @@ public class Album {
      *       input: void
      *       output: a List<Track>
      */
-
+    private List<Track> orderSongByTitle() {
+        return tracks.stream().sorted(Comparator.comparing(Track::getTitle)).toList();
+    }
     @Override
     public String toString() {
         return "ch.usi.inf.ajp22.Album{" +
