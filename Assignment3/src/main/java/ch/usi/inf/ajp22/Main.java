@@ -95,6 +95,11 @@ public class Main {
      *       output: a Map<Artist, List<Album>> where the key is an Artist and the value is a List of Album which
      *       this artist had produced.
      */
+    public static Map<Artist, List<Album>> groupAlbumByArtist(List<Album> albums) {
+        return albums
+                .stream()
+                .collect(Collectors.groupingBy(Album::getArtist, Collectors.toList()));
+    }
 
     /**
      * 4 Points
@@ -102,6 +107,9 @@ public class Main {
      *       input: a stream of tracks and a predicate to apply to the track stream.
      *       output: a List of Track that has been filtered according to the predicate taken as input.
      */
+    public static List<Track> trackFilteredWithPredicate(Stream<Track> tracks, Predicate<Track> predicate) {
+        return tracks.filter(predicate).collect(Collectors.toList());
+    }
 
     /**
      * 5 Points
@@ -109,6 +117,12 @@ public class Main {
      *       input: a list of Album AND an int called "n"
      *       output: a List<Album> where every album in this stream has at least "n" tracks.
      */
+    public static List<Album> getAlbumWithAtLeastNTracks(List<Album> albums, int n) {
+        return albums
+                .stream()
+                .filter(a -> a.getTracks().size() >= n)
+                .collect(Collectors.toList());
+    }
 
     /**
      * 5 Points
@@ -122,6 +136,14 @@ public class Main {
      * Use the method getTracks from the Album class to get the List of tracks.
      * Input: an Album
      */
+    public static void printTrackStatistics(Album album) {
+
+        String str = "Stat for: " + album.getTitle() + System.lineSeparator() +
+                "Max: " + album.getTracks().stream().max(Comparator.comparingInt(Track::getLength)) +
+                "Min: " + album.getTracks().stream().min(Comparator.comparingInt(Track::getLength));
+
+        System.out.println(str);
+    }
 
     /**
      * 5 Points
@@ -131,6 +153,13 @@ public class Main {
      *       output: a String in the following format:
      *       [artist1.name - artist1.nickname, artist2.name - artist2.nickname, ...]
      */
+    public static String getArtistNameAndNickNameFromAlbum(List<Album> albums) {
+        return albums
+                .stream()
+                .map(a -> a.getArtist().getName() + " - " + a.getArtist().getNickname() )
+                .distinct()
+                .collect(Collectors.joining(", "));
+    }
 
     /**
      * 5 Points
