@@ -49,7 +49,7 @@ public class Album {
      *       input: void
      *       output: an Optional<Track>
      */
-    private Optional<Track> searchLongestSong() {
+    public Optional<Track> searchLongestSong() {
         return tracks.stream().max(byDuration);
     }
 
@@ -60,7 +60,7 @@ public class Album {
      *       input: void
      *       output: a List<Track>
      */
-    private List<Track> orderSongByTitle() {
+    public List<Track> orderSongByTitle() {
         return tracks.stream().sorted(Comparator.comparing(Track::getTitle)).toList();
     }
     @Override

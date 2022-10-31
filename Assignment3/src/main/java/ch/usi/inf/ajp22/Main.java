@@ -174,6 +174,26 @@ public class Main {
      *       You MUST use the collect method, in the variant which takes as input a supplier, an accumulator and a
      *       combiner.
      */
+    public static Track combineAllTrackInAlbum(Stream<Track> tracks) {
+        // e.g.
+        // parallel stream - combiner is combining partial results
+        //StringBuilder result1 = vowels.parallelStream().collect(
+        //      // new StringBuilder object for every call
+        //      StringBuilder::new,
+        //      // appending list string element to the StringBuilder instance
+        //      (x, y) -> x.append(y),
+        //      // merging the StringBuilder instances (merged with each other with a comma separated value)
+        //		(a, b) -> a.append(",").append(b));
+        //System.out.println(result1.toString());
+        return tracks.parallel().collect(
+                // supplier
+                () -> new Track("fake title", LocalDate.now(), Track.Genre.DISCO, 0),
+                // accumulator
+                (t, track) -> t.setLength(t.getLength() + track.getLength()),
+                // combiner
+                (t1, t2) -> t1.setLength(t1.getLength() + t2.getLength())
+        );
+    }
 
     /**
      * 5 Points
@@ -182,6 +202,13 @@ public class Main {
      *       output: a Map<Artist, List<Track>> where the key is an Artist and the value is a List of Track which
      *       this artist had produced.
      */
+    public static Map<Artist, List<Track>> groupTrackByArtist(List<Album> albums) {
+        // not working, produces List<List<Track>>
+//        return albums.stream()
+//                .collect(Collectors.groupingBy(Album::getArtist, Collectors.mapping(Album::getTracks, Collectors.toList())))
+        return albums.stream()
+                .collect(Collectors.toMap(Album::getArtist, Album::getTracks));
+    }
 
     /**
      * 5 Bonus Points
@@ -192,7 +219,9 @@ public class Main {
      *       input: a Collection<T> and an IntFunction<T[]>
      *       output: an array of generic type
      */
-
+    public static <T> T[] createArray(Collection<T> collection, IntFunction<T[]> intGenerator) {
+        return collection.toArray(intGenerator);
+    }
 
     private static void writeToFile(String s) throws IOException {
         BufferedWriter fw = new BufferedWriter(new FileWriter("artist.txt", true));
@@ -228,6 +257,9 @@ public class Main {
             }
         };
 
+        BinaryOperator<Track> mixTrackLambda = (t1, t2) ->
+                new Track(t1.getTitle(), t1.getReleasedDate(), t2.getGenre(), t2.getLength());
+
         /**
          * 3 Points
          * TODO: Create a stream pipeline that:
@@ -235,7 +267,11 @@ public class Main {
          *       2) sort the filtered tracks using the title field
          *       3) print the tracks
          */
-
+        // TODO: verify this one!
+        SampleData.appetiteForDestruction.getTracks().stream()
+                        .filter(track -> track.getRating() >= 4)
+                        .sorted(Comparator.comparing(Track::getTitle))
+                        .forEach(System.out::println);
         /**
          * 4 Points
          * TODO: Print on file the artist's name, obtained with the method SampleData.getArtistList(),
@@ -243,6 +279,13 @@ public class Main {
          *       the throw exception from the writeToFile method. If there is an IOException you must throw a
          *       RuntimeException with the same event.
          */
+        SampleData.getAlbumList().stream().forEach(album -> {
+            try {
+                writeToFile(album.getArtist().getName());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         System.out.printf("Longest track in %s is %s\n",
                 SampleData.appetiteForDestruction.getTitle(),
