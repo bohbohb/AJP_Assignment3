@@ -5,10 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,7 +95,7 @@ public class Main {
     public static Map<Artist, List<Album>> groupAlbumByArtist(List<Album> albums) {
         return albums
                 .stream()
-                .collect(Collectors.groupingBy(Album::getArtist, Collectors.toList()));
+                .collect(Collectors.groupingBy(Album::getArtist));
     }
 
     /**
@@ -137,12 +134,10 @@ public class Main {
      * Input: an Album
      */
     public static void printTrackStatistics(Album album) {
-
-        String str = "Stat for: " + album.getTitle() + System.lineSeparator() +
-                "Max: " + album.getTracks().stream().max(Comparator.comparingInt(Track::getLength)) +
-                "Min: " + album.getTracks().stream().min(Comparator.comparingInt(Track::getLength));
-
-        System.out.println(str);
+        System.out.printf("Stat for: %s\n\"Max: %d\nMin: %d\nAve: %f\n", album.getTitle(),
+                album.getTracks().stream().mapToInt(Track::getLength).max().orElse(0),
+                album.getTracks().stream().mapToInt(Track::getLength).min().orElse(0),
+                album.getTracks().stream().mapToDouble(Track::getLength).average().orElse(0.0));
     }
 
     /**
@@ -156,7 +151,7 @@ public class Main {
     public static String getArtistNameAndNickNameFromAlbum(List<Album> albums) {
         return albums
                 .stream()
-                .map(a -> a.getArtist().getName() + " - " + a.getArtist().getNickname() )
+                .map(a -> a.getArtist().getName() + " - " + a.getArtist().getNickname())
                 .distinct()
                 .collect(Collectors.joining(", "));
     }
@@ -175,16 +170,6 @@ public class Main {
      *       combiner.
      */
     public static Track combineAllTrackInAlbum(Stream<Track> tracks) {
-        // e.g.
-        // parallel stream - combiner is combining partial results
-        //StringBuilder result1 = vowels.parallelStream().collect(
-        //      // new StringBuilder object for every call
-        //      StringBuilder::new,
-        //      // appending list string element to the StringBuilder instance
-        //      (x, y) -> x.append(y),
-        //      // merging the StringBuilder instances (merged with each other with a comma separated value)
-        //		(a, b) -> a.append(",").append(b));
-        //System.out.println(result1.toString());
         return tracks.parallel().collect(
                 // supplier
                 () -> new Track("fake title", LocalDate.now(), Track.Genre.DISCO, 0),
@@ -203,9 +188,6 @@ public class Main {
      *       this artist had produced.
      */
     public static Map<Artist, List<Track>> groupTrackByArtist(List<Album> albums) {
-        // not working, produces List<List<Track>>
-//        return albums.stream()
-//                .collect(Collectors.groupingBy(Album::getArtist, Collectors.mapping(Album::getTracks, Collectors.toList())))
         return albums.stream()
                 .collect(Collectors.toMap(Album::getArtist, Album::getTracks));
     }
@@ -220,7 +202,7 @@ public class Main {
      *       output: an array of generic type
      */
     public static <T> T[] createArray(Collection<T> collection, IntFunction<T[]> intGenerator) {
-        return collection.toArray(intGenerator);
+        return collection.toArray(intGenerator.apply(collection.size()));
     }
 
     private static void writeToFile(String s) throws IOException {
@@ -247,18 +229,10 @@ public class Main {
          * 2 Points
          * TODO: Replace the Anonymous class below with a lambda expression.
          */
-        BinaryOperator<Track> mixTrack = new BinaryOperator<>() {
-            @Override
-            public Track apply(Track t1, Track t2) {
-                return new Track(t1.getTitle(),
-                        t1.getReleasedDate(),
-                        t2.getGenre(),
-                        t2.getLength());
-            }
-        };
-
-        BinaryOperator<Track> mixTrackLambda = (t1, t2) ->
-                new Track(t1.getTitle(), t1.getReleasedDate(), t2.getGenre(), t2.getLength());
+        BinaryOperator<Track> mixTrack = (t1, t2) -> new Track(t1.getTitle(),
+                t1.getReleasedDate(),
+                t2.getGenre(),
+                t2.getLength());
 
         /**
          * 3 Points
@@ -267,11 +241,12 @@ public class Main {
          *       2) sort the filtered tracks using the title field
          *       3) print the tracks
          */
-        // TODO: verify this one!
-        SampleData.appetiteForDestruction.getTracks().stream()
-                        .filter(track -> track.getRating() >= 4)
-                        .sorted(Comparator.comparing(Track::getTitle))
-                        .forEach(System.out::println);
+        Consumer<Album> printTracks = album -> album.getTracks()
+                .stream()
+                .filter(t -> t.getRating() >= 4)
+                .sorted(Comparator.comparing(Track::getTitle))
+                .forEach(System.out::println);
+
         /**
          * 4 Points
          * TODO: Print on file the artist's name, obtained with the method SampleData.getArtistList(),
@@ -279,7 +254,7 @@ public class Main {
          *       the throw exception from the writeToFile method. If there is an IOException you must throw a
          *       RuntimeException with the same event.
          */
-        SampleData.getAlbumList().stream().forEach(album -> {
+        SampleData.getAlbumList().forEach(album -> {
             try {
                 writeToFile(album.getArtist().getName());
             } catch (IOException e) {
